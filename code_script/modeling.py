@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from arguments import get_model_classes, get_args
-
+import argparse
 class Model(torch.nn.Module):
 
     def __init__(self, args, tokenizer = None, prompt_label_idx = None):
@@ -33,7 +33,9 @@ class Model(torch.nn.Module):
         hidden_states, _ = self.model(inputs_embeds=inputs_embeds,
                           attention_mask=attention_mask,
                           token_type_ids=token_type_ids)
+        # MASK에 대한 hidden sta
         hidden_states = hidden_states[mlm_labels >= 0].view(input_ids.size(0), len(self.prompt_label_idx), -1)
+        # (BATCH, N_MASKS, DIM)
         logits = [
             torch.mm(
                 hidden_states[:,index,:], 
@@ -41,7 +43,7 @@ class Model(torch.nn.Module):
             )
             for index, i in enumerate(self.prompt_label_idx)
         ]
-        return logits
+        return logits # List[torch.Tensor] : [(Batch, N_MASK1_LABEL), ..., (Batch, N_MASK4_LABEL) ]
 
 def get_model(tokenizer, prompt_label_idx):
     args = get_args()

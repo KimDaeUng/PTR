@@ -7,11 +7,14 @@ def get_temps(tokenizer):
         for i in f.readlines():
             i = i.strip().split("\t")
             info = {}
+            
             info['name'] = i[1].strip()
             info['temp'] = [
-                    ['the', tokenizer.mask_token],
+                    [tokenizer.mask_token, ':'],
+                    # ['the', tokenizer.mask_token],
                     [tokenizer.mask_token, tokenizer.mask_token, tokenizer.mask_token], 
-                    ['the', tokenizer.mask_token],
+                    [tokenizer.mask_token, ':'],
+                    # ['the', tokenizer.mask_token],
              ]
             print (i)
             info['labels'] = [

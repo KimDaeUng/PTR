@@ -1,4 +1,5 @@
 import argparse
+from typing import List
 import torch
 import transformers
 from transformers import BertConfig, BertTokenizer, BertModel, \
@@ -15,7 +16,8 @@ _MODEL_CLASSES = {
     },
     'roberta': {
         'config': RobertaConfig,
-        'tokenizer': RobertaTokenizer,
+        'tokenizer': BertTokenizer,
+        # 'tokenizer': RobertaTokenizer, # original
         'model':RobertaModel,
     },
     'albert': {
@@ -84,6 +86,29 @@ def get_args_parser():
 
     args = parser.parse_args()
     args.n_gpu = torch.cuda.device_count()
+
+    # args = argparse.Namespace(data_dir="/opt/ml/PTR/datasets/klue-re", \
+    #     output_dir="/opt/ml/PTR/results/klue-re", \
+    #     model_type="roberta", \
+    #     model_name_or_path="jinmang2/roberta-large-re-tapt-20300", \
+    #     per_gpu_train_batch_size=64, \
+    #     per_gpu_eval_batch_size=128, \
+    #     gradient_accumulation_steps=1, \
+    #     max_seq_length=139, \
+    #     warmup_steps=0, \
+    #     learning_rate=2e-5, \
+    #     learning_rate_for_new_token=1e-5, \
+    #     num_train_epochs=4, \
+    #     weight_decay=1e-2, \
+    #     adam_epsilon=1e-6, \
+    #     max_steps=-1,
+    #     cache_dir="",
+    #     max_grad_norm=1.0,
+    #     seed=42,
+    #     dropout_prob=0.1,
+    #     new_tokens=5, 
+    #     temps="temp.txt")
+    # args.n_gpu = torch.cuda.device_count()
 
     global _GLOBAL_ARGS
     _GLOBAL_ARGS = args

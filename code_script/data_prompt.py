@@ -51,7 +51,8 @@ class REPromptDataset(DictDataset):
                 for line in f.readlines():
                     line = line.rstrip()
                     if len(line) > 0:
-                        features.append(eval(line))            
+                        features.append(eval(line))      
+                        features[-1]['relation'] = features[-1]['relation'].replace('\\', '')
             features = self.list2tensor(features, tokenizer)
 
         super().__init__(**features)
@@ -76,9 +77,18 @@ class REPromptDataset(DictDataset):
                         _temp[i] = _labels[len(_labels_index)]
                         _labels_index.append(i)
 
-                original = tokenizer.encode(" ".join(temp), add_special_tokens=False)
-                final =  tokenizer.encode(" ".join(_temp), add_special_tokens=False)
-
+                original = tokenizer.convert_tokens_to_ids(temp)
+                # original = tokenizer.encode(" ".join(temp), add_special_tokens=False) # original
+                final = tokenizer.convert_tokens_to_ids(_temp)
+                # final =  tokenizer.encode(" ".join(_temp), add_special_tokens=False) # original
+                # if len(original) != len(final):
+                #     print(temp)
+                #     print(_temp)
+                #     print(tokenizer.decode(original))
+                #     print(tokenizer.decode(final))
+                #     print(original)
+                #     print(final)
+                #     print('---------')
                 assert len(original) == len(final)
                 self.temp_ids[name]['label_ids'] += [final[pos] for pos in _labels_index]
 
@@ -95,12 +105,12 @@ class REPromptDataset(DictDataset):
         for i in self.set:
             print (i)
         print ("=================================")
-
+        # torch.set : List[List] : class words id list of [MASK0], ..., [MASK4]
         for name in self.temp_ids:
             for j in range(len(self.temp_ids[name]['label_ids'])):
                 self.temp_ids[name]['label_ids'][j] = self.set[j].index(
                     self.temp_ids[name]['label_ids'][j])
-
+        # (N_class, N_MASK)
         self.prompt_id_2_label = torch.zeros(len(self.temp_ids), len(self.set)).long()
         
         for name in self.temp_ids:
@@ -183,7 +193,7 @@ class REPromptDataset(DictDataset):
             res[key] = torch.Tensor(res[key]).long()
         return res
 
-    def tokenize(self, item, tokenizer):
+    def tokenize(self, item, tokenizer, ):
 
         sentence = item['token']
         pos_head = item['h']
@@ -194,6 +204,7 @@ class REPromptDataset(DictDataset):
 
         sentence = " ".join(sentence)
         sentence = tokenizer.encode(sentence, add_special_tokens=False)
+        # sentence = tokenizer.encode(sentence, add_special_tokens=False)
         e1 = tokenizer.encode(" ".join(['was', pos_head['name']]), add_special_tokens=False)[1:]
         e2 = tokenizer.encode(" ".join(['was', pos_tail['name']]), add_special_tokens=False)[1:]
 
